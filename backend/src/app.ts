@@ -3,11 +3,12 @@ import cors from 'cors';
 import { env } from './shared/config/env.js';
 import { errorHandler } from './shared/middlewares/errorHandler.js';
 import { logger } from './shared/logger/logger.js';
+import { generalLimiter } from './shared/middlewares/rateLimit.js';
 
 
 const app = express();
 
-
+app.use(generalLimiter);
 app.use(cors({
     origin: (origin, callback) => {
         if (!origin) return callback(null, true);
