@@ -26,27 +26,32 @@ Incluye:
 
 ---
 
-## 3. Tipos de datos y convenciones
+### 3.1 Tipos de datos mapeados
 
-### 3.1 Claves primarias
+| Lógico | PostgreSQL | Prisma |
+|--------|-----------|--------|
+| UUID | uuid | String @db.Uuid |
+| Timestamp | timestamptz | DateTime @db.Timestamptz() |
+| Integer | integer | Int |
+| Text | text | String |
+| JSON | jsonb | Json |
 
-* Tipo: `UUID`.
-* Generación: por base de datos (`gen_random_uuid()`) o por aplicación.
-* Justificación:
+### 3.2 Índices implementados
 
-  * evita colisiones,
-  * facilita escalabilidad,
-  * es consistente con prácticas modernas y con Prisma.
+```prisma
+@@index([professional_id, scheduled_start_at])
+@@index([service_id])
+@@index([deletedAt])
+```
 
-### 3.2 Fechas y horas
+### 3.3 Advisory Locks
 
-* Tipo: `timestamptz`.
-* Convención: almacenar siempre en UTC; conversión a zona local en la capa de aplicación.
+Para slots concurrentes, implementado en:
+`src/components/appointments/data-access/appointmentRepository.ts`
 
-### 3.3 Enteros de dominio
-
-* Duraciones, buffers y capacidades se almacenan como `integer`.
-* Validación mediante restricciones `CHECK`.
+```typescript
+await prisma.$executeRaw`SELECT pg_advisory_xact_lock(${lockKey})`;
+```
 
 ### 3.4 Datos estructurados
 

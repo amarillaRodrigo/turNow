@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Professional {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  email         String   @unique
+  createdAt     DateTime @default(now()) @db.Timestamptz()
+  updatedAt     DateTime @updatedAt @db.Timestamptz()
+  deletedAt     DateTime? @db.Timestamptz()
+
+  appointments  Appointment[]
+  services      Service[]
+
+  @@index([deletedAt])
+}
+
+model Service {
+  id                      String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  professional_id         String   @db.Uuid
+  name                    String
+  service_duration_minutes Int
+  slot_interval_minutes   Int
+  capacity_per_slot       Int
+  buffer_minutes          Int
+  createdAt               DateTime @default(now()) @db.Timestamptz()
+  updatedAt               DateTime @updatedAt @db.Timestamptz()
+  deletedAt               DateTime? @db.Timestamptz()
+
+  professional  Professional @relation(fields: [professional_id], references: [id], onDelete: Restrict)
+  appointments  Appointment[]
+
+  @@index([professional_id])
+  @@index([deletedAt])
+}
+
+model Appointment {
+  id                        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  professional_id           String   @db.Uuid
+  service_id                String   @db.Uuid
+  patient_contact_id        String   @db.Uuid
+  scheduled_start_at        DateTime @db.Timestamptz()
+  planned_duration_minutes  Int
+  planned_buffer_minutes    Int
+  actual_start_at           DateTime? @db.Timestamptz()
+  actual_end_at             DateTime? @db.Timestamptz()
+  status                    String
+  createdAt                 DateTime @default(now()) @db.Timestamptz()
+  updatedAt                 DateTime @updatedAt @db.Timestamptz()
+  deletedAt                 DateTime? @db.Timestamptz()
+
+  professional  Professional @relation(fields: [professional_id], references: [id], onDelete: Restrict)
+  service       Service @relation(fields: [service_id], references: [id], onDelete: Restrict)
+  events        AppointmentEvent[]
+  notifications Notification[]
+
+  @@index([professional_id, scheduled_start_at])
+  @@index([service_id])
+  @@index([patient_contact_id])
+  @@index([deletedAt])
+}
+
+model AppointmentEvent {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  appointment_id  String   @db.Uuid
+  event_type      String
+  occurred_at     DateTime @default(now()) @db.Timestamptz()
+  payload         Json?
+
+  appointment     Appointment @relation(fields: [appointment_id], references: [id], onDelete: Restrict)
+
+  @@index([appointment_id, occurred_at])
+}
+
+model Notification {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  appointment_id    String   @db.Uuid
+  notification_type String
+  status            String
+  scheduled_at      DateTime @db.Timestamptz()
+  createdAt         DateTime @default(now()) @db.Timestamptz()
+
+  appointment       Appointment @relation(fields: [appointment_id], references: [id], onDelete: Restrict)
+
+  @@unique([appointment_id, notification_type])
+  @@index([status, scheduled_at])
+  @@index([appointment_id])
+}
