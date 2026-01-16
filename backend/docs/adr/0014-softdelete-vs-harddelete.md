@@ -8,7 +8,7 @@ Accepted
 
 ## Context
 
-Elminar profesionales de manera permanente de la base de datos, es decir, hacer hard delete puede llevar a perder información valiosa que podría ser necesaria en el futuro para auditorías, análisis históricos o recuperación de datos.
+Eliminar profesionales de manera permanente de la base de datos, es decir, hacer hard delete puede llevar a perder información valiosa que podría ser necesaria en el futuro para auditorías, análisis históricos o recuperación de datos.
 
 ## Decision
 
